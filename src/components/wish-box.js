@@ -4,7 +4,12 @@ import jQuery from 'jquery';
 import WishForm from './wish-form';
 import Wish from './wish';
 
+import SocketIOClient from 'socket.io-client';
+
 import {API_CONFIG_URLs} from '../config/API_Urls';
+
+// Creating the socket-client instance will automatically connect to the server.
+const socket = SocketIOClient('http://localhost:3002');
 
 export default class WishBox extends React.Component {
 
@@ -14,10 +19,24 @@ export default class WishBox extends React.Component {
     this.state = {
       wishesList: []
     };
+
   }
 
   componentWillMount() {
     this._fetchWishes();
+  }
+
+  componentDidMount() {
+    socket.on('new wish', (data) => {
+        const wishAdded = {
+          wish_id: data.id,
+          wish: data.wish
+        };
+        this.setState({
+          wishesList: this.state.wishesList.concat([wishAdded])
+        });
+      }
+    );
   }
 
   render() {
@@ -40,7 +59,6 @@ export default class WishBox extends React.Component {
   }
 
   _getWishes() {
-    console.log(this.state.wishesList);
     return this.state.wishesList.map((wish) => {
       return <Wish
         {...wish}
@@ -68,16 +86,8 @@ export default class WishBox extends React.Component {
       method: 'POST',
       url: this._getURL(API_CONFIG_URLs.new_wish),
       data: {wish: wish},
-      success: (wishResult) => {
+      success: () => {
 
-        const wishAdded = {
-          wish_id: wishResult.wish.insertId,
-          wish: wish
-        };
-
-        this.setState({
-          wishesList: this.state.wishesList.concat([wishAdded])
-        });
       }
     });
   }
