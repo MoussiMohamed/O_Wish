@@ -30,10 +30,14 @@ export default class WishBox extends React.Component {
     socket.on('new wish', (data) => {
         const wishAdded = {
           wish_id: data.id,
-          wish: data.wish
+          wish: data.wish,
+          created_at: data.created_at
         };
+
+        this.state.wishesList.unshift(wishAdded);
+        
         this.setState({
-          wishesList: this.state.wishesList.concat([wishAdded])
+          wishesList: this.state.wishesList
         });
       }
     );
