@@ -2,22 +2,37 @@ import React from 'react';
 import jQuery from 'jquery';
 
 import WishForm from './wish-form';
+import LoginForm from './login-form'
 import Wish from './wish';
+import cookie from 'react-cookie';
 
 import SocketIOClient from 'socket.io-client';
 
 import {API_CONFIG_URLs} from '../config/API_Urls';
 
 // Creating the socket-client instance will automatically connect to the server.
-const socket = SocketIOClient('http://localhost:3002');
+const socket = SocketIOClient(API_CONFIG_URLs.socketIO);
 
 export default class WishBox extends React.Component {
 
   constructor() {
     super();
 
+    const loginTpl = (
+      <div className="row wishes-container">
+        <div className="cell">
+          <h2>Sign In</h2>
+          <div className="wish-box">
+            <LoginForm login={this._login.bind(this)}/>
+          </div>
+        </div>
+      </div>
+    );
+
     this.state = {
-      wishesList: []
+      wishesList: [],
+      loginForm: loginTpl,
+      loggedIn: false
     };
 
   }
@@ -35,17 +50,19 @@ export default class WishBox extends React.Component {
         };
 
         this.state.wishesList.unshift(wishAdded);
-        
+
         this.setState({
           wishesList: this.state.wishesList
         });
       }
     );
+
   }
 
   render() {
     const wishesList = this._getWishes();
-    return (
+
+    const wishForm = (
       <div className="row wishes-container">
         <div className="cell">
           <h2>Wish list management</h2>
@@ -60,6 +77,8 @@ export default class WishBox extends React.Component {
         </div>
       </div>
     );
+
+    return (!cookie.load('loggedIn') ? this.state.loginForm : wishForm);
   }
 
   _getWishes() {
@@ -91,7 +110,33 @@ export default class WishBox extends React.Component {
       url: this._getURL(API_CONFIG_URLs.new_wish),
       data: {wish: wish},
       success: () => {
+        //Handled by socket.io
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
 
+  _login(email, password) {
+
+    if (!email || !password) {
+      return;
+    }
+
+    jQuery.ajax({
+      method: 'POST',
+      url: this._getURL(API_CONFIG_URLs.login),
+      data: {email: email, password: password},
+      success: (resp) => {
+        if (resp.User.length) {
+          alert(JSON.stringify(resp.User));
+          cookie.save('loggedIn', true);
+          this.setState({loggedIn: true});
+        }
+        else {
+          alert('Login ou mot de passe incorrect.');
+        }
       }
     });
   }
@@ -105,8 +150,16 @@ export default class WishBox extends React.Component {
       method: 'GET',
       url: this._getURL(API_CONFIG_URLs.wishesList),
       success: (wishes) => {
-        var wishesList = wishes.wishes;
+        const wishesList = wishes.wishes;
+
+        wishesList.sort(function (a, b) {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+
         this.setState({wishesList});
+      },
+      error: (err) => {
+        console.log(err);
       }
     });
   }

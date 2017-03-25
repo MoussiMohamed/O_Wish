@@ -503,7 +503,7 @@ p {
   padding-bottom: 5px;
 }
 
-.wish-form {
+.wish-form, .login-form {
   background-color: #5a4a64;
   border-radius: 10px;
   margin-bottom: 40px;
@@ -521,6 +521,17 @@ p {
   width: 154px;
 }
 
+.login-form::before {
+  background: url("images/wish.png") center no-repeat;
+  content: '';
+  height: 80px;
+  position: absolute;
+  right: 0;
+  top: -80px;
+  width: 154px;
+}
+
+login-form-actions > button,
 .wish-form-actions > button {
   background-color: #fce87c;
   border: 0;
@@ -535,8 +546,11 @@ p {
 }
 
 .wish-form-actions > button:active,
+.login-form-actions > button:active,
 .wish-form-actions > button:focus,
-.wish-form-actions > button:hover {
+.login-form-actions > button:focus,
+.wish-form-actions > button:hover,
+.login-form-actions > button:hover {
   background-color: #fbe259;
 }
 
