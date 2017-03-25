@@ -130,7 +130,7 @@ export default class WishBox extends React.Component {
       data: {email: email, password: password},
       success: (resp) => {
         if (resp.User.length) {
-          alert(JSON.stringify(resp.User));
+      
           cookie.save('loggedIn', true);
           this.setState({loggedIn: true});
         }
